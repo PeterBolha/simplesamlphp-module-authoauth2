@@ -9,13 +9,15 @@
   ],
   "license": "LGPL-2.1-only",
   "require": {
-    "php": "^8.1",
+    "php": "^8.2",
     "simplesamlphp/composer-module-installer": "^1.1",
     "league/oauth2-client": "^2.7",
     "simplesamlphp/simplesamlphp": "^v2.3",
+    "simplesamlphp/openid": "^0.8",
     "firebase/php-jwt": "^5.5|^6|^7",
     "kevinrob/guzzle-cache-middleware": "^4.1.1",
     "psr/cache": "^1.0|^2.0|^3.0",
+    "psr/simple-cache": "^3.0",
     "symfony/cache": "^7.0|^6.0|^5.0",
     "ext-json": "*"
   },

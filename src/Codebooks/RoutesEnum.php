@@ -10,4 +10,5 @@ enum RoutesEnum: string
     case Logout = 'logout';
     case LoggedOut = 'loggedout';
     case ConsentError = 'errors/consent';
+    case EntityConfiguration = '.well-known/openid-federation';
 }

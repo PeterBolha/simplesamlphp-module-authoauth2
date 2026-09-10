@@ -29,6 +29,11 @@ class RoutesEnumTest extends TestCase
         $this->assertEquals('errors/consent', RoutesEnum::ConsentError->value);
     }
 
+    public function testEntityConfigurationEnum(): void
+    {
+        $this->assertEquals('.well-known/openid-federation', RoutesEnum::EntityConfiguration->value);
+    }
+
     public function testAllEnumCases(): void
     {
         $expected = [
@@ -36,6 +41,7 @@ class RoutesEnumTest extends TestCase
             'Logout' => 'logout',
             'LoggedOut' => 'loggedout',
             'ConsentError' => 'errors/consent',
+            'EntityConfiguration' => '.well-known/openid-federation',
         ];
 
         foreach (RoutesEnum::cases() as $case) {

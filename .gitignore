@@ -7,3 +7,4 @@ vendor/
 .test-secrets
 composer.lock
 build/
+config/*.local.php
