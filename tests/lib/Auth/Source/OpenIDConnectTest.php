@@ -8,6 +8,8 @@ use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
+use SimpleSAML\Module\authoauth2\Providers\FederationOpenIDConnectProvider;
+use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
 use SimpleSAML\Utils\HTTP;
 use Test\SimpleSAML\MockOAuth2Provider;
 use Test\SimpleSAML\MockOpenIDConnectProvider;
@@ -145,6 +147,47 @@ class OpenIDConnectTest extends OAuth2Test
                 ]),
             ]
         ];
+    }
+
+    public function testFederationOptionSwitchesToFederationProvider(): void
+    {
+        $as = $this->getInstance([
+            'issuer' => 'https://op.example.org',
+            'clientId' => 'test client id',
+            'federation' => [
+                'trustAnchors' => ['https://ta.example.org'],
+                'cache' => false,
+            ],
+        ]);
+        $provider = $as->getProvider($as->getConfig());
+        $this->assertInstanceOf(FederationOpenIDConnectProvider::class, $provider);
+        $this->assertSame('https://op.example.org', $provider->getOPEntityId());
+    }
+
+    public function testExplicitProviderClassWinsOverFederationOption(): void
+    {
+        $as = $this->getInstance([
+            'issuer' => 'https://op.example.org',
+            'clientId' => 'test client id',
+            'providerClass' => MockOpenIDConnectProvider::class,
+            'federation' => [
+                'trustAnchors' => ['https://ta.example.org'],
+                'cache' => false,
+            ],
+        ]);
+        $provider = $as->getProvider($as->getConfig());
+        $this->assertInstanceOf(MockOpenIDConnectProvider::class, $provider);
+    }
+
+    public function testWithoutFederationOptionClassicProviderIsUsed(): void
+    {
+        $as = $this->getInstance([
+            'issuer' => 'https://op.example.org',
+            'clientId' => 'test client id',
+        ]);
+        $provider = $as->getProvider($as->getConfig());
+        $this->assertInstanceOf(OpenIDConnectProvider::class, $provider);
+        $this->assertNotInstanceOf(FederationOpenIDConnectProvider::class, $provider);
     }
 
     public function testLogoutNoEndpointConfigured(): void

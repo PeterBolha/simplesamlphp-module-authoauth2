@@ -16,6 +16,7 @@ use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Codebooks\LegacyRoutesEnum;
 use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
+use SimpleSAML\Module\authoauth2\Providers\FederationOpenIDConnectProvider;
 use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
 use SimpleSAML\Utils\HTTP;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -44,6 +45,7 @@ class OpenIDConnect extends OAuth2
      */
     public function getProvider(Configuration $config): AbstractProvider
     {
+        $config = $this->applyFederationOptions($config);
         $provider = parent::getProvider($config);
         $httpClient = $provider->getHttpClient();
         /** @psalm-suppress DeprecatedMethod */
@@ -67,6 +69,32 @@ class OpenIDConnect extends OAuth2
             )
         );
         return $provider;
+    }
+
+    /**
+     * If the source config has a 'federation' option, route this source through
+     * the federation-aware provider: OP metadata is resolved over a verified
+     * trust chain instead of the .well-known discovery document.
+     *
+     * Source config shape:
+     *   'federation' => [
+     *       'trustAnchors' => ['https://ta.example.org'],  // required
+     *       'cache' => true,                               // optional
+     *       'cacheDir' => '/path',                         // optional
+     *   ],
+     *   'opEntityId' => 'https://op.example.org',          // optional; defaults to 'issuer'
+     *
+     * An explicit providerClass always wins (it may itself be the federation
+     * provider or a further subclass of it).
+     */
+    private function applyFederationOptions(Configuration $config): Configuration
+    {
+        if ($config->getOptionalArray('federation', null) === null || $config->hasValue('providerClass')) {
+            return $config;
+        }
+        $options = $config->toArray();
+        $options['providerClass'] = FederationOpenIDConnectProvider::class;
+        return Configuration::loadFromArray($options, 'authsources:openidconnect:federation');
     }
 
     /**

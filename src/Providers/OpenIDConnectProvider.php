@@ -39,7 +39,7 @@ class OpenIDConnectProvider extends AbstractProvider
     /**
      * @var ?Configuration
      */
-    private ?Configuration $openIdConfiguration = null;
+    protected ?Configuration $openIdConfiguration = null;
 
     /**
      * @var string
