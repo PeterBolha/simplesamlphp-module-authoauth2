@@ -7,10 +7,12 @@ namespace Test\SimpleSAML\Auth\Source;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Configuration;
+use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
 use SimpleSAML\Module\authoauth2\Providers\FederationOpenIDConnectProvider;
 use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
 use SimpleSAML\Utils\HTTP;
+use Test\SimpleSAML\MockFederationOpenIDConnectProvider;
 use Test\SimpleSAML\MockOAuth2Provider;
 use Test\SimpleSAML\MockOpenIDConnectProvider;
 use Test\SimpleSAML\RedirectException;
@@ -177,6 +179,43 @@ class OpenIDConnectTest extends OAuth2Test
         ]);
         $provider = $as->getProvider($as->getConfig());
         $this->assertInstanceOf(MockOpenIDConnectProvider::class, $provider);
+    }
+
+    public function testAuthenticatePostsFormWhenProviderRequiresIt(): void
+    {
+        $_SERVER['REQUEST_URI'] = '/dummy';
+        $expectedFields = [
+            'client_id' => 'https://rp.example.org/module.php/authoauth2',
+            'response_type' => 'code',
+            'request' => 'signed.request.object.jwt',
+        ];
+
+        $http = $this->createMock(HTTP::class);
+        $http->expects($this->once())
+            ->method('submitPOSTData')
+            ->with('https://op.example.org/authorize', $expectedFields)
+            ->willThrowException(new RedirectException('submitPOSTData', 'https://op.example.org/authorize'));
+        $http->expects($this->never())->method('redirectTrustedURL');
+
+        $as = $this->getInstance([
+            'issuer' => 'https://op.example.org',
+            'clientId' => 'test client id',
+            'providerClass' => MockFederationOpenIDConnectProvider::class,
+            'federation' => [
+                'trustAnchors' => ['https://ta.example.org'],
+                'cache' => false,
+            ],
+        ]);
+        $as->setHttp($http);
+
+        $state = [State::ID => 'stateId'];
+        try {
+            $as->authenticate($state);
+            $this->fail('POST dispatch expected');
+        } catch (RedirectException $e) {
+            $this->assertEquals('submitPOSTData', $e->getMessage());
+        }
+        $this->assertEquals(static::AUTH_ID, $state[OAuth2::AUTHID]);
     }
 
     public function testWithoutFederationOptionClassicProviderIsUsed(): void

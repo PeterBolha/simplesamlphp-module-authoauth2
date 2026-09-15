@@ -72,6 +72,39 @@ class OpenIDConnect extends OAuth2
     }
 
     /**
+     * Federation sources using automatic registration (§12.1) deliver the
+     * authorization request as a POST form (the signed Request Object with its
+     * trust chain does not fit a redirect URL); all other sources keep the
+     * classic GET redirect.
+     */
+    public function authenticate(array &$state): void
+    {
+        $provider = $this->getProvider($this->config);
+        if (
+            !($provider instanceof FederationOpenIDConnectProvider)
+            || !$provider->requiresPostAuthorizationRequest()
+        ) {
+            parent::authenticate($state);
+            return;
+        }
+
+        $state[self::AUTHID] = $this->getAuthId();
+        $stateID = State::saveState($state, self::STAGE_INIT);
+
+        $options = $this->config->getOptionalArray('urlAuthorizeOptions', []);
+        $options = array_merge($options, $this->getAuthorizeOptionsFromState($state));
+        $options['state'] = self::STATE_PREFIX . '|' . $stateID;
+
+        $data = $provider->getAuthorizationFormData($options);
+        Logger::debug('authoauth2: ' . $this->getLabel() . ' posting authorization request to ' . $data['url']);
+
+        // must run before submitPOSTData(), which renders a page and exits
+        $this->saveCodeChallengeFromProvider($provider);
+
+        $this->getHttp()->submitPOSTData($data['url'], $data['fields']);
+    }
+
+    /**
      * If the source config has a 'federation' option, route this source through
      * the federation-aware provider: OP metadata is resolved over a verified
      * trust chain instead of the .well-known discovery document.

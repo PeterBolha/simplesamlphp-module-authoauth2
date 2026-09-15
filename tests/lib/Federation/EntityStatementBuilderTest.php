@@ -141,8 +141,14 @@ class EntityStatementBuilderTest extends TestCase
         $this->assertSame('web', $metadata['application_type']);
         $this->assertSame('openid profile', $metadata['scope']);
         $this->assertSame(['query', 'form_post'], $metadata['response_modes_supported']);
-        $this->assertSame('client_secret_post', $metadata['token_endpoint_auth_method']);
+        $this->assertSame('private_key_jwt', $metadata['token_endpoint_auth_method']);
         $this->assertSame(['RS256'], $metadata['id_token_signing_alg_values_supported']);
+
+        $this->assertIsArray($metadata['jwks']);
+        $this->assertCount(1, $metadata['jwks']['keys'], 'federation public keys double as client keys');
+        foreach ($metadata['jwks']['keys'] as $jwk) {
+            $this->assertArrayNotHasKey('d', $jwk);
+        }
     }
 
     public function testRpMetadataOverridesAndPassthrough(): void

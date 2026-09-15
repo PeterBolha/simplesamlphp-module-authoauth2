@@ -34,16 +34,19 @@ use Symfony\Component\Cache\Psr16Cache;
  *                           publicKey (PEM path), algorithm (default RS256),
  *                           keyId (default: JWK thumbprint), password (optional).
  *                           The first entry signs the statement; all public keys
- *                           are published in the jwks claim (key rollover). These
- *                           keys are for federation signing only, separate from
- *                           any key used for OIDC client authentication.
+ *                           are published in the jwks claim (key rollover). The
+ *                           same public keys are published in the RP metadata
+ *                           jwks: they double as the OIDC client keys the OP
+ *                           uses to verify our request objects and client
+ *                           assertions (automatic registration, §12.1).
  *   trustAnchors            list of trust anchor entity IDs
  *   authorityHints          list, defaults to trustAnchors
  *   lifetime                statement validity, ISO 8601 duration (default P1D)
  *   redirectUris            list, defaults to the module's linkback URL
  *   scopes                  list (default ['openid', 'profile'])
- *   tokenEndpointAuthMethod default 'client_secret_post' (how this module's
- *                           providers authenticate to the token endpoint)
+ *   tokenEndpointAuthMethod default 'private_key_jwt' (how this module's
+ *                           federation provider authenticates to the token
+ *                           endpoint; the federation key signs the assertion)
  *   idTokenSigningAlgs      list (default ['RS256'])
  *   trustMarks              static trust marks, passthrough list of
  *                           {trust_mark_type, trust_mark}
@@ -154,7 +157,7 @@ class EntityStatementBuilder
 
         $scopes = self::toStringList($config['scopes'] ?? []);
         $this->scopes = $scopes !== [] ? $scopes : ['openid', 'profile'];
-        $this->tokenEndpointAuthMethod = (string)($config['tokenEndpointAuthMethod'] ?? 'client_secret_post');
+        $this->tokenEndpointAuthMethod = (string)($config['tokenEndpointAuthMethod'] ?? 'private_key_jwt');
         $idTokenAlgs = self::toStringList($config['idTokenSigningAlgs'] ?? []);
         $this->idTokenSigningAlgs = $idTokenAlgs !== [] ? $idTokenAlgs : ['RS256'];
         $this->trustMarks = array_values(array_filter(
@@ -189,9 +192,7 @@ class EntityStatementBuilder
         $payload[ClaimsEnum::Iat->value] = $issuedAt;
         $payload[ClaimsEnum::Exp->value] = $issuedAt + $this->lifetimeTotalSeconds();
         $payload[ClaimsEnum::Jti->value] = bin2hex(random_bytes(16));
-        $payload[ClaimsEnum::Jwks->value] = $this->federation()->jwksDecoratorFactory()->fromJwkDecorators(
-            ...$this->signatureKeyPairBag()->getAllPublicKeys(),
-        )->jsonSerialize();
+        $payload[ClaimsEnum::Jwks->value] = $this->publicJwks();
         if ($this->authorityHints !== []) {
             $payload[ClaimsEnum::AuthorityHints->value] = $this->authorityHints;
         }
@@ -262,8 +263,21 @@ class EntityStatementBuilder
             'scope' => implode(' ', $this->scopes),
             'token_endpoint_auth_method' => $this->tokenEndpointAuthMethod,
             'id_token_signing_alg_values_supported' => $this->idTokenSigningAlgs,
+            // The federation keys double as OIDC client keys (§12.1); a
+            // separately configured client key arrives via additionalRpMetadata.
+            'jwks' => $this->publicJwks(),
         ];
         return array_merge($metadata, $this->additionalRpMetadata);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function publicJwks(): array
+    {
+        return $this->federation()->jwksDecoratorFactory()->fromJwkDecorators(
+            ...$this->signatureKeyPairBag()->getAllPublicKeys(),
+        )->jsonSerialize();
     }
 
     protected function federation(): Federation
