@@ -42,15 +42,12 @@
             {% for index, trustChain in trustChainBag.getAll %}
                 <h5>{{ 'Chain'|trans }} {{ loop.index }} — {{ 'Trust Anchor'|trans }}:
                     {{ trustChain.getResolvedTrustAnchor.getIssuer|e }}</h5>
-                <p>
-                    {{ 'Path'|trans }}:
-                    {% for entity in trustChain.getEntities %}
-                        {% if loop.index > 1 %}&rArr; {% endif %}{{ entity.getSubject|e }}
-                    {% endfor %}
-                </p>
+                <div class="code-box"><code>{{ 'Path'|trans }}:
+{% for entity in trustChain.getEntities %}{% if loop.index > 1 %}
+  &seArr; {% endif %}{{ entity.getSubject|e }}{% endfor %}</code></div>
                 <p>{{ 'Expires'|trans }}: {{ trustChain.getResolvedExpirationTime|date('Y-m-d H:i:s T')|e }}</p>
                 {% if resolvedMetadata[index] is not empty %}
-                    <pre><code>{{ resolvedMetadata[index]|json_encode(constant('JSON_PRETTY_PRINT'))|e }}</code></pre>
+                    <div class="code-box"><code>{{ resolvedMetadata[index]|json_encode(constant('JSON_PRETTY_PRINT'))|e }}</code></div>
                 {% else %}
                     <p>{{ 'No resolved metadata.'|trans }}</p>
                 {% endif %}

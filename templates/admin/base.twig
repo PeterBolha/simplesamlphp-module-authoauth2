@@ -5,6 +5,7 @@
 
 {% block preload %}
     <link rel="stylesheet" href="{{ asset('css/admin.css', 'admin') }}">
+    <link rel="stylesheet" href="{{ asset('css/src/default.css', 'authoauth2') }}">
 {% endblock %}
 
 {% block content %}
@@ -15,22 +16,29 @@
 
     <h2>{{ 'OpenID Connect Federation'|trans }}</h2>
 
-    {% if moduleMenu is defined and moduleMenu is not empty %}
-        <div class="pure-menu pure-menu-horizontal">
-            <ul class="pure-menu-list">
-                {% for item in moduleMenu %}
-                    <li class="pure-menu-item{% if item.route == activeModuleRoute %} pure-menu-selected{% endif %}">
-                        <a href="{{ item.url|e }}" class="pure-menu-link">{{ item.label|trans }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
+    <div class="authoauth2-container">
+
+        {% if moduleMenu is defined and moduleMenu is not empty %}
+            <div class="menu">
+                <ul>
+                    {% for item in moduleMenu %}
+                        <li>
+                            <a href="{{ item.url|e }}"
+                               class="{{ item.route == activeModuleRoute ? 'active' : '' }}"
+                            >{{ item.label|trans }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="content">
+            {% if subPageTitle %}
+                <h3>{{ subPageTitle|trans }}</h3>
+            {% endif %}
+
+            {% block authoauth2Content %}{% endblock %}
         </div>
-    {% endif %}
-
-    {% if subPageTitle %}
-        <h3>{{ subPageTitle|trans }}</h3>
-    {% endif %}
-
-    {% block authoauth2Content %}{% endblock %}
+    </div>
 
 {% endblock content -%}
