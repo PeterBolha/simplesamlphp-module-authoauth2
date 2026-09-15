@@ -1,0 +1,24 @@
+{% set subPageTitle = subPageTitle ?? '' %}
+{% set pagetitle = 'OpenID Connect Federation' ~ (subPageTitle ? ' | ' ~ subPageTitle : '') %}
+
+{% extends "base.twig" %}
+
+{% block preload %}
+    <link rel="stylesheet" href="{{ asset('css/admin.css', 'admin') }}">
+{% endblock %}
+
+{% block content %}
+
+    {% if menu is defined and menu is not empty %}
+        {%- include "@admin/includes/menu.twig" %}
+    {% endif %}
+
+    <h2>{{ 'OpenID Connect Federation'|trans }}</h2>
+
+    {% if subPageTitle %}
+        <h3>{{ subPageTitle|trans }}</h3>
+    {% endif %}
+
+    {% block authoauth2Content %}{% endblock %}
+
+{% endblock content -%}

@@ -1,27 +1,37 @@
-{% set pagetitle = 'OpenID Connect Federation RP'|trans %}
+{% set subPageTitle = 'Status'|trans %}
 
-{% extends "base.twig" %}
+{% extends "@authoauth2/admin/base.twig" %}
 
-{% block content %}
-    <h2>{{ 'OpenID Connect Federation Relying Party'|trans }}</h2>
+{% block authoauth2Content %}
 
-    <p>
-        <a href="{{ trustChainTestUrl|e }}">{{ 'Test Trust Chain Resolution'|trans }}</a>
-    </p>
-
-    <h3>{{ 'Entity'|trans }}</h3>
-    <table>
+    <table class="attributes pure-table pure-table-striped">
         <tr><th>{{ 'Entity ID'|trans }}</th><td>{{ status.entityId|e }}</td></tr>
         <tr><th>{{ 'Statement lifetime'|trans }}</th><td>{{ status.lifetime|e }}</td></tr>
         <tr><th>{{ 'Token endpoint auth method'|trans }}</th><td>{{ status.tokenEndpointAuthMethod|e }}</td></tr>
         <tr><th>{{ 'Statement cache'|trans }}</th>
             <td>{{ status.cacheEnabled ? 'enabled'|trans : 'disabled'|trans }}</td></tr>
         <tr><th>{{ 'Trust marks published'|trans }}</th><td>{{ status.trustMarkCount }}</td></tr>
+        <tr><th>{{ 'Trust anchors'|trans }}</th>
+            <td>
+                {%- for ta in status.trustAnchors %}{{ ta|e }}{% if not loop.last %}<br>{% endif %}{% else %}
+                {{ 'none'|trans }}{% endfor -%}
+            </td></tr>
+        <tr><th>{{ 'Authority hints'|trans }}</th>
+            <td>
+                {%- for hint in status.authorityHints %}{{ hint|e }}{% if not loop.last %}<br>{% endif %}{% else %}
+                {{ 'none'|trans }}{% endfor -%}
+            </td></tr>
+        <tr><th>{{ 'Scopes'|trans }}</th><td>{{ status.scopes|join(' ')|e }}</td></tr>
+        <tr><th>{{ 'Redirect URIs'|trans }}</th>
+            <td>
+                {%- for uri in status.redirectUris %}{{ uri|e }}{% if not loop.last %}<br>{% endif %}{% else %}
+                {{ 'none'|trans }}{% endfor -%}
+            </td></tr>
     </table>
 
-    <h3>{{ 'Federation signing keys'|trans }}</h3>
+    <h4>{{ 'Federation signing keys'|trans }}</h4>
     {% if status.keys is not empty %}
-        <table>
+        <table class="attributes pure-table pure-table-striped">
             <tr>
                 <th>{{ 'Algorithm'|trans }}</th>
                 <th>{{ 'Key ID'|trans }}</th>
@@ -44,26 +54,11 @@
         <p>{{ 'No federation keys configured.'|trans }}</p>
     {% endif %}
 
-    <h3>{{ 'Trust'|trans }}</h3>
-    <table>
-        <tr><th>{{ 'Trust anchors'|trans }}</th>
-            <td><ul>{% for ta in status.trustAnchors %}<li>{{ ta|e }}</li>{% else %}<li>{{ 'none'|trans }}</li>{% endfor %}</ul></td></tr>
-        <tr><th>{{ 'Authority hints'|trans }}</th>
-            <td><ul>{% for hint in status.authorityHints %}<li>{{ hint|e }}</li>{% else %}<li>{{ 'none'|trans }}</li>{% endfor %}</ul></td></tr>
-    </table>
-
-    <h3>{{ 'Published RP metadata'|trans }}</h3>
-    <table>
-        <tr><th>{{ 'Scopes'|trans }}</th><td>{{ status.scopes|join(' ')|e }}</td></tr>
-        <tr><th>{{ 'Redirect URIs'|trans }}</th>
-            <td><ul>{% for uri in status.redirectUris %}<li>{{ uri|e }}</li>{% else %}<li>{{ 'none'|trans }}</li>{% endfor %}</ul></td></tr>
-    </table>
-
-    <h3>{{ 'Entity configuration statement'|trans }}</h3>
+    <h4>{{ 'Entity configuration statement'|trans }}</h4>
     {% if status.statement.error %}
         <p><strong>{{ 'The entity configuration statement could not be built: %err%.'|trans({'%err%': status.statement.error}) }}</strong></p>
     {% else %}
-        <table>
+        <table class="attributes pure-table pure-table-striped">
             <tr><th>{{ 'Issued at'|trans }}</th>
                 <td>{{ status.statement.issuedAt ? status.statement.issuedAt|date('Y-m-d H:i:s T')|e : 'n/a'|trans }}</td></tr>
             <tr><th>{{ 'Expires at'|trans }}</th>
@@ -72,9 +67,9 @@
         </table>
     {% endif %}
 
-    <h3>{{ 'Federation-enabled auth sources'|trans }}</h3>
+    <h4>{{ 'Federation-enabled auth sources'|trans }}</h4>
     {% if status.authSources is not empty %}
-        <table>
+        <table class="attributes pure-table pure-table-striped">
             <tr>
                 <th>{{ 'Name'|trans }}</th>
                 <th>{{ 'OP issuer'|trans }}</th>
@@ -91,4 +86,5 @@
     {% else %}
         <p>{{ 'No auth source of this module uses the federation option.'|trans }}</p>
     {% endif %}
-{% endblock %}
+
+{% endblock authoauth2Content -%}

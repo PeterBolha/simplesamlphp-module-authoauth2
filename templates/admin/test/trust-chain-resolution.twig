@@ -1,35 +1,31 @@
-{% set pagetitle = 'Test Trust Chain Resolution'|trans %}
+{% set subPageTitle = 'Test Trust Chain Resolution'|trans %}
 
-{% extends "base.twig" %}
+{% extends "@authoauth2/admin/base.twig" %}
 
-{% block content %}
-    <h2>{{ 'Test Trust Chain Resolution'|trans }}</h2>
-
-    <p>
-        <a href="{{ statusUrl|e }}">{{ 'Federation Status'|trans }}</a>
-    </p>
+{% block authoauth2Content %}
 
     <p>
         {{ 'Resolve a trust chain from a leaf entity ID to one or more trust anchors. The form is pre-filled with this RP entity ID and the configured trust anchors.'|trans }}
     </p>
 
-    <form method="post" action="{{ testUrl|e }}">
-        <p>
-            <label for="leafEntityId">{{ 'Leaf Entity ID'|trans }}</label><br>
-            <input type="text" name="leafEntityId" id="leafEntityId" size="80" required
+    <form method="post" action="{{ testUrl|e }}" class="pure-form pure-form-stacked">
+        <fieldset>
+            <label for="leafEntityId">{{ 'Leaf Entity ID'|trans }}</label>
+            <input type="text" name="leafEntityId" id="leafEntityId" class="full-width" required
                    value="{{ leafEntityId|e }}">
-        </p>
-        <p>
-            <label for="trustAnchorIds">{{ 'Trust Anchor IDs'|trans }}</label><br>
-            <textarea name="trustAnchorIds" id="trustAnchorIds" rows="4" cols="80"
-                      required>{{ trustAnchorIds|e }}</textarea><br>
-            <em>{{ 'One trust anchor ID per line.'|trans }}</em>
-        </p>
-        <p><button type="submit">{{ 'Resolve'|trans }}</button></p>
+
+            <label for="trustAnchorIds">{{ 'Trust Anchor IDs'|trans }}</label>
+            <textarea name="trustAnchorIds" id="trustAnchorIds" rows="4" class="full-width"
+                      required>{{ trustAnchorIds|e }}</textarea>
+            <span class="pure-form-message">{{ 'One trust anchor ID per line.'|trans }}</span>
+
+            <br>
+            <button type="submit" class="pure-button">{{ 'Resolve'|trans }}</button>
+        </fieldset>
     </form>
 
     {% if isFormSubmitted %}
-        <h3>{{ 'Log messages'|trans }}</h3>
+        <h4>{{ 'Log messages'|trans }}</h4>
         {% if logMessages is not empty %}
             <ul>
                 {% for message in logMessages %}
@@ -40,12 +36,12 @@
             <p>{{ 'No warnings or errors.'|trans }}</p>
         {% endif %}
 
-        <h3>{{ 'Resolved chains'|trans }}</h3>
+        <h4>{{ 'Resolved chains'|trans }}</h4>
         {% if trustChainBag %}
             <p>{{ 'Total chains'|trans }}: {{ trustChainBag.getCount }}</p>
             {% for index, trustChain in trustChainBag.getAll %}
-                <h4>{{ 'Chain'|trans }} {{ loop.index }} — {{ 'Trust Anchor'|trans }}:
-                    {{ trustChain.getResolvedTrustAnchor.getIssuer|e }}</h4>
+                <h5>{{ 'Chain'|trans }} {{ loop.index }} — {{ 'Trust Anchor'|trans }}:
+                    {{ trustChain.getResolvedTrustAnchor.getIssuer|e }}</h5>
                 <p>
                     {{ 'Path'|trans }}:
                     {% for entity in trustChain.getEntities %}
@@ -58,9 +54,11 @@
                 {% else %}
                     <p>{{ 'No resolved metadata.'|trans }}</p>
                 {% endif %}
+                {% if not loop.last %}<hr>{% endif %}
             {% endfor %}
         {% else %}
             <p>{{ 'No chains resolved.'|trans }}</p>
         {% endif %}
     {% endif %}
-{% endblock %}
+
+{% endblock authoauth2Content -%}

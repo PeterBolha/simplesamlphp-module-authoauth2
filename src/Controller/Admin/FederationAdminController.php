@@ -9,8 +9,6 @@ use SimpleSAML\Error\NotFound;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
 use SimpleSAML\Module\authoauth2\Federation\FederationStatusService;
-use SimpleSAML\XHTML\Template;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -36,15 +34,16 @@ class FederationAdminController
             throw new NotFound('Federation is not configured for this module.');
         }
 
-        $tpl = new Template($this->config, 'authoauth2:admin/status.twig');
-        $tpl->data['status'] = $status->getStatus();
-        $tpl->data['statusUrl'] = $this->moduleUrl(RoutesEnum::AdminStatus);
-        $tpl->data['trustChainTestUrl'] = $this->moduleUrl(RoutesEnum::AdminTestTrustChainResolution);
-        return $tpl;
-    }
-
-    private function moduleUrl(RoutesEnum $route): string
-    {
-        return Module::getModuleURL('authoauth2/' . $route->value);
+        return $this->renderAdminPage(
+            $this->config,
+            'authoauth2:admin/status.twig',
+            [
+                'status' => $status->getStatus(),
+                'statusUrl' => Module::getModuleURL('authoauth2/' . RoutesEnum::AdminStatus->value),
+                'trustChainTestUrl' => Module::getModuleURL(
+                    'authoauth2/' . RoutesEnum::AdminTestTrustChainResolution->value,
+                ),
+            ],
+        );
     }
 }

@@ -15,7 +15,6 @@ use SimpleSAML\OpenID\Codebooks\EntityTypesEnum;
 use SimpleSAML\OpenID\Exceptions\TrustChainException;
 use SimpleSAML\OpenID\Federation;
 use SimpleSAML\OpenID\SupportedAlgorithms;
-use SimpleSAML\XHTML\Template;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -115,16 +114,16 @@ class FederationTestController
             }
         }
 
-        $tpl = new Template($this->config, 'authoauth2:admin/test/trust-chain-resolution.twig');
-        $tpl->data['leafEntityId'] = $leafEntityId;
-        $tpl->data['trustAnchorIds'] = implode("\n", $trustAnchorIds);
-        $tpl->data['trustChainBag'] = $trustChainBag;
-        $tpl->data['resolvedMetadata'] = $resolvedMetadata;
-        $tpl->data['logMessages'] = $this->arrayLogger->getEntries();
-        $tpl->data['isFormSubmitted'] = $isFormSubmitted;
-        $tpl->data['statusUrl'] = Module::getModuleURL('authoauth2/' . RoutesEnum::AdminStatus->value);
-        $tpl->data['testUrl'] = Module::getModuleURL('authoauth2/' . RoutesEnum::AdminTestTrustChainResolution->value);
-        return $tpl;
+        return $this->renderAdminPage($this->config, 'authoauth2:admin/test/trust-chain-resolution.twig', [
+            'leafEntityId' => $leafEntityId,
+            'trustAnchorIds' => implode("\n", $trustAnchorIds),
+            'trustChainBag' => $trustChainBag,
+            'resolvedMetadata' => $resolvedMetadata,
+            'logMessages' => $this->arrayLogger->getEntries(),
+            'isFormSubmitted' => $isFormSubmitted,
+            'statusUrl' => Module::getModuleURL('authoauth2/' . RoutesEnum::AdminStatus->value),
+            'testUrl' => Module::getModuleURL('authoauth2/' . RoutesEnum::AdminTestTrustChainResolution->value),
+        ]);
     }
 
     /**
