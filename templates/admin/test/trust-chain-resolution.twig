@@ -1,0 +1,66 @@
+{% set pagetitle = 'Test Trust Chain Resolution'|trans %}
+
+{% extends "base.twig" %}
+
+{% block content %}
+    <h2>{{ 'Test Trust Chain Resolution'|trans }}</h2>
+
+    <p>
+        <a href="{{ statusUrl|e }}">{{ 'Federation Status'|trans }}</a>
+    </p>
+
+    <p>
+        {{ 'Resolve a trust chain from a leaf entity ID to one or more trust anchors. The form is pre-filled with this RP entity ID and the configured trust anchors.'|trans }}
+    </p>
+
+    <form method="post" action="{{ testUrl|e }}">
+        <p>
+            <label for="leafEntityId">{{ 'Leaf Entity ID'|trans }}</label><br>
+            <input type="text" name="leafEntityId" id="leafEntityId" size="80" required
+                   value="{{ leafEntityId|e }}">
+        </p>
+        <p>
+            <label for="trustAnchorIds">{{ 'Trust Anchor IDs'|trans }}</label><br>
+            <textarea name="trustAnchorIds" id="trustAnchorIds" rows="4" cols="80"
+                      required>{{ trustAnchorIds|e }}</textarea><br>
+            <em>{{ 'One trust anchor ID per line.'|trans }}</em>
+        </p>
+        <p><button type="submit">{{ 'Resolve'|trans }}</button></p>
+    </form>
+
+    {% if isFormSubmitted %}
+        <h3>{{ 'Log messages'|trans }}</h3>
+        {% if logMessages is not empty %}
+            <ul>
+                {% for message in logMessages %}
+                    <li><code>{{ message|e }}</code></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>{{ 'No warnings or errors.'|trans }}</p>
+        {% endif %}
+
+        <h3>{{ 'Resolved chains'|trans }}</h3>
+        {% if trustChainBag %}
+            <p>{{ 'Total chains'|trans }}: {{ trustChainBag.getCount }}</p>
+            {% for index, trustChain in trustChainBag.getAll %}
+                <h4>{{ 'Chain'|trans }} {{ loop.index }} — {{ 'Trust Anchor'|trans }}:
+                    {{ trustChain.getResolvedTrustAnchor.getIssuer|e }}</h4>
+                <p>
+                    {{ 'Path'|trans }}:
+                    {% for entity in trustChain.getEntities %}
+                        {% if loop.index > 1 %}&rArr; {% endif %}{{ entity.getSubject|e }}
+                    {% endfor %}
+                </p>
+                <p>{{ 'Expires'|trans }}: {{ trustChain.getResolvedExpirationTime|date('Y-m-d H:i:s T')|e }}</p>
+                {% if resolvedMetadata[index] is not empty %}
+                    <pre><code>{{ resolvedMetadata[index]|json_encode(constant('JSON_PRETTY_PRINT'))|e }}</code></pre>
+                {% else %}
+                    <p>{{ 'No resolved metadata.'|trans }}</p>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>{{ 'No chains resolved.'|trans }}</p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

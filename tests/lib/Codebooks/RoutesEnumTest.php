@@ -34,6 +34,16 @@ class RoutesEnumTest extends TestCase
         $this->assertEquals('.well-known/openid-federation', RoutesEnum::EntityConfiguration->value);
     }
 
+    public function testAdminStatusEnum(): void
+    {
+        $this->assertEquals('admin/status', RoutesEnum::AdminStatus->value);
+    }
+
+    public function testAdminTestTrustChainResolutionEnum(): void
+    {
+        $this->assertEquals('admin/test/trust-chain-resolution', RoutesEnum::AdminTestTrustChainResolution->value);
+    }
+
     public function testAllEnumCases(): void
     {
         $expected = [
@@ -42,6 +52,8 @@ class RoutesEnumTest extends TestCase
             'LoggedOut' => 'loggedout',
             'ConsentError' => 'errors/consent',
             'EntityConfiguration' => '.well-known/openid-federation',
+            'AdminStatus' => 'admin/status',
+            'AdminTestTrustChainResolution' => 'admin/test/trust-chain-resolution',
         ];
 
         foreach (RoutesEnum::cases() as $case) {

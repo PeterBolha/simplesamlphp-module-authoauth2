@@ -12,6 +12,8 @@ use SimpleSAML\Module\authoauth2\Controller\Oauth2Controller;
 use SimpleSAML\Module\authoauth2\Controller\OIDCLogoutController;
 use SimpleSAML\Module\authoauth2\Controller\ErrorController;
 use SimpleSAML\Module\authoauth2\Controller\FederationController;
+use SimpleSAML\Module\authoauth2\Controller\Admin\FederationAdminController;
+use SimpleSAML\Module\authoauth2\Controller\Admin\FederationTestController;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 /** @psalm-suppress InvalidArgument */
@@ -29,6 +31,12 @@ return function (RoutingConfigurator $routes): void {
         ->controller([ErrorController::class, 'consent']);
     $routes->add(RoutesEnum::EntityConfiguration->name, RoutesEnum::EntityConfiguration->value)
         ->controller([FederationController::class, 'entityConfiguration']);
+    $routes->add(RoutesEnum::AdminStatus->name, RoutesEnum::AdminStatus->value)
+        ->controller([FederationAdminController::class, 'status'])
+        ->methods(['GET']);
+    $routes->add(RoutesEnum::AdminTestTrustChainResolution->name, RoutesEnum::AdminTestTrustChainResolution->value)
+        ->controller([FederationTestController::class, 'trustChainResolution'])
+        ->methods(['GET', 'POST']);
 
     // Legacy Routes
     $routes->add(LegacyRoutesEnum::LegacyLinkback->name, LegacyRoutesEnum::LegacyLinkback->value)

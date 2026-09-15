@@ -1,0 +1,94 @@
+{% set pagetitle = 'OpenID Connect Federation RP'|trans %}
+
+{% extends "base.twig" %}
+
+{% block content %}
+    <h2>{{ 'OpenID Connect Federation Relying Party'|trans }}</h2>
+
+    <p>
+        <a href="{{ trustChainTestUrl|e }}">{{ 'Test Trust Chain Resolution'|trans }}</a>
+    </p>
+
+    <h3>{{ 'Entity'|trans }}</h3>
+    <table>
+        <tr><th>{{ 'Entity ID'|trans }}</th><td>{{ status.entityId|e }}</td></tr>
+        <tr><th>{{ 'Statement lifetime'|trans }}</th><td>{{ status.lifetime|e }}</td></tr>
+        <tr><th>{{ 'Token endpoint auth method'|trans }}</th><td>{{ status.tokenEndpointAuthMethod|e }}</td></tr>
+        <tr><th>{{ 'Statement cache'|trans }}</th>
+            <td>{{ status.cacheEnabled ? 'enabled'|trans : 'disabled'|trans }}</td></tr>
+        <tr><th>{{ 'Trust marks published'|trans }}</th><td>{{ status.trustMarkCount }}</td></tr>
+    </table>
+
+    <h3>{{ 'Federation signing keys'|trans }}</h3>
+    {% if status.keys is not empty %}
+        <table>
+            <tr>
+                <th>{{ 'Algorithm'|trans }}</th>
+                <th>{{ 'Key ID'|trans }}</th>
+                <th>{{ 'Public key'|trans }}</th>
+            </tr>
+            {% for key in status.keys %}
+                <tr>
+                    <td>{{ key.algorithm|e }}</td>
+                    <td>{{ key.keyId is not empty ? key.keyId|e : '(JWK thumbprint)'|trans }}</td>
+                    <td>
+                        {{ key.publicKey|e }}
+                        {% if not key.publicKeyExists %}
+                            <strong>({{ 'file missing'|trans }})</strong>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>{{ 'No federation keys configured.'|trans }}</p>
+    {% endif %}
+
+    <h3>{{ 'Trust'|trans }}</h3>
+    <table>
+        <tr><th>{{ 'Trust anchors'|trans }}</th>
+            <td><ul>{% for ta in status.trustAnchors %}<li>{{ ta|e }}</li>{% else %}<li>{{ 'none'|trans }}</li>{% endfor %}</ul></td></tr>
+        <tr><th>{{ 'Authority hints'|trans }}</th>
+            <td><ul>{% for hint in status.authorityHints %}<li>{{ hint|e }}</li>{% else %}<li>{{ 'none'|trans }}</li>{% endfor %}</ul></td></tr>
+    </table>
+
+    <h3>{{ 'Published RP metadata'|trans }}</h3>
+    <table>
+        <tr><th>{{ 'Scopes'|trans }}</th><td>{{ status.scopes|join(' ')|e }}</td></tr>
+        <tr><th>{{ 'Redirect URIs'|trans }}</th>
+            <td><ul>{% for uri in status.redirectUris %}<li>{{ uri|e }}</li>{% else %}<li>{{ 'none'|trans }}</li>{% endfor %}</ul></td></tr>
+    </table>
+
+    <h3>{{ 'Entity configuration statement'|trans }}</h3>
+    {% if status.statement.error %}
+        <p><strong>{{ 'The entity configuration statement could not be built: %err%.'|trans({'%err%': status.statement.error}) }}</strong></p>
+    {% else %}
+        <table>
+            <tr><th>{{ 'Issued at'|trans }}</th>
+                <td>{{ status.statement.issuedAt ? status.statement.issuedAt|date('Y-m-d H:i:s T')|e : 'n/a'|trans }}</td></tr>
+            <tr><th>{{ 'Expires at'|trans }}</th>
+                <td>{{ status.statement.expiresAt ? status.statement.expiresAt|date('Y-m-d H:i:s T')|e : 'n/a'|trans }}</td></tr>
+            <tr><th>{{ 'Seconds remaining'|trans }}</th><td>{{ status.statement.secondsRemaining }}</td></tr>
+        </table>
+    {% endif %}
+
+    <h3>{{ 'Federation-enabled auth sources'|trans }}</h3>
+    {% if status.authSources is not empty %}
+        <table>
+            <tr>
+                <th>{{ 'Name'|trans }}</th>
+                <th>{{ 'OP issuer'|trans }}</th>
+                <th>{{ 'Own trust anchors'|trans }}</th>
+            </tr>
+            {% for source in status.authSources %}
+                <tr>
+                    <td>{{ source.name|e }}</td>
+                    <td>{{ source.issuer|e }}</td>
+                    <td>{{ source.hasOwnTrustAnchors ? 'yes'|trans : 'no'|trans }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>{{ 'No auth source of this module uses the federation option.'|trans }}</p>
+    {% endif %}
+{% endblock %}
