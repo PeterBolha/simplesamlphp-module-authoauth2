@@ -6,7 +6,6 @@ namespace SimpleSAML\Module\authoauth2\Controller\Admin;
 
 use SimpleSAML\Configuration;
 use SimpleSAML\Error\NotFound;
-use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
 use SimpleSAML\Module\authoauth2\Federation\FederationStatusService;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,11 +38,8 @@ class FederationAdminController
             'authoauth2:admin/status.twig',
             [
                 'status' => $status->getStatus(),
-                'statusUrl' => Module::getModuleURL('authoauth2/' . RoutesEnum::AdminStatus->value),
-                'trustChainTestUrl' => Module::getModuleURL(
-                    'authoauth2/' . RoutesEnum::AdminTestTrustChainResolution->value,
-                ),
             ],
+            RoutesEnum::AdminStatus,
         );
     }
 }

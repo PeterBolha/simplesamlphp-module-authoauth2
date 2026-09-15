@@ -121,9 +121,8 @@ class FederationTestController
             'resolvedMetadata' => $resolvedMetadata,
             'logMessages' => $this->arrayLogger->getEntries(),
             'isFormSubmitted' => $isFormSubmitted,
-            'statusUrl' => Module::getModuleURL('authoauth2/' . RoutesEnum::AdminStatus->value),
             'testUrl' => Module::getModuleURL('authoauth2/' . RoutesEnum::AdminTestTrustChainResolution->value),
-        ]);
+        ], RoutesEnum::AdminTestTrustChainResolution);
     }
 
     /**

@@ -8,6 +8,7 @@ use SimpleSAML\Configuration;
 use SimpleSAML\Locale\Translate;
 use SimpleSAML\Module;
 use SimpleSAML\Module\admin\Controller\Menu as SspAdminMenu;
+use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
 use SimpleSAML\Utils\Auth;
 use SimpleSAML\XHTML\Template;
 
@@ -30,6 +31,7 @@ trait AdminTrait
         Configuration $config,
         string $templateName,
         array $data,
+        RoutesEnum $activeRoute,
     ): Template {
         $tpl = new Template($config, $templateName);
 
@@ -42,13 +44,26 @@ trait AdminTrait
             // Insert dispatches the adminmenu hooks; add logout afterwards so
             // hook-added entries still land before it, as on admin pages.
             $tpl = $sspMenu->insert($tpl);
-            $sspMenu->addOption('logout', (new Auth())->getAdminLogoutURL(), Translate::noop('Log out'));
             $tpl->data['menu']['logout'] = [
                 'url' => (new Auth())->getAdminLogoutURL(),
                 'name' => Translate::noop('Log out'),
             ];
             $tpl->data['frontpage_section'] = 'authoauth2';
         }
+
+        $tpl->data['moduleMenu'] = [
+            [
+                'route' => RoutesEnum::AdminStatus->value,
+                'url' => Module::getModuleURL('authoauth2/' . RoutesEnum::AdminStatus->value),
+                'label' => Translate::noop('Status'),
+            ],
+            [
+                'route' => RoutesEnum::AdminTestTrustChainResolution->value,
+                'url' => Module::getModuleURL('authoauth2/' . RoutesEnum::AdminTestTrustChainResolution->value),
+                'label' => Translate::noop('Test Trust Chain Resolution'),
+            ],
+        ];
+        $tpl->data['activeModuleRoute'] = $activeRoute->value;
 
         $tpl->data += $data;
         return $tpl;

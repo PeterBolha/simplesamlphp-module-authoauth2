@@ -15,6 +15,18 @@
 
     <h2>{{ 'OpenID Connect Federation'|trans }}</h2>
 
+    {% if moduleMenu is defined and moduleMenu is not empty %}
+        <div class="pure-menu pure-menu-horizontal">
+            <ul class="pure-menu-list">
+                {% for item in moduleMenu %}
+                    <li class="pure-menu-item{% if item.route == activeModuleRoute %} pure-menu-selected{% endif %}">
+                        <a href="{{ item.url|e }}" class="pure-menu-link">{{ item.label|trans }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
     {% if subPageTitle %}
         <h3>{{ subPageTitle|trans }}</h3>
     {% endif %}
